@@ -15,7 +15,7 @@ jobs:
 
     - name: Set up OpenWRT SDK
       run: |
-        git clone https://github.com/gyssi007/immortalwrtARM.git
+        git clone https://github.com/padavanonly/immortalwrtARM.git
         cd immortalwrtARM
         git checkout mt7986  # 切换到 mt7986 分支
         ./scripts/feeds update -a
