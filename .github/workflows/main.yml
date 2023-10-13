@@ -1,0 +1,46 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up OpenWRT SDK
+      run: |
+        git clone https://github.com/gyssi007/immortalwrtARM.git
+        cd immortalwrtARM
+        git checkout mt7986  # 切换到 mt7986 分支
+        ./scripts/feeds update -a
+        ./scripts/feeds install -a
+        make defconfig
+        make download
+        make toolchain/install
+      working-directory: ./immortalwrtARM
+
+    - name: Add your third-party source code
+      run: |
+        git clone https://github.com/kenzok8/small-package.git package/your-package
+      working-directory: ./immortalwrtARM
+
+    - name: Configure and compile your package
+      run: |
+        make menuconfig  # 在此处手动配置你的插件
+        make package/luci-app-msd_lite/compile V=s
+      working-directory: ./immortalwrtARM
+
+    - name: Create release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ./immortalwrtARM/bin/packages/arch/your-package/your-package-*.ipk
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
